@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+/frontend/node_modules/
+/go-backend/vendor/
+
+# Build outputs
+.next/
+/frontend/.next/
+out/
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Debug/Temporary
+.DS_Store
+Thumbs.db
+*.log
+uploads/
+/go-backend/uploads/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
