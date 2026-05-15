@@ -1,0 +1,353 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .wbs-root { padding: 1rem 0 2rem; }
+  .wbs-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .wbs-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+
+  .phase { margin-bottom: 1.25rem; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .phase-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; background: var(--color-background-secondary); }
+  .phase-header:hover { background: var(--color-background-tertiary); }
+  .phase-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+  .phase-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  .phase-meta { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+  .chevron { font-size: 14px; color: var(--color-text-secondary); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .phase-body { padding: 0 0 4px; }
+  .group { padding: 6px 14px 4px 14px; }
+  .group-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 4px; margin-top: 4px; }
+  .task-list { display: flex; flex-direction: column; gap: 2px; }
+  .task { display: flex; align-items: baseline; gap: 8px; padding: 4px 8px; border-radius: 6px; }
+  .task:hover { background: var(--color-background-secondary); }
+  .task-id { font-size: 11px; color: var(--color-text-tertiary); font-family: var(--font-mono); min-width: 52px; }
+  .task-name { font-size: 13px; color: var(--color-text-primary); flex: 1; }
+  .task-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; white-space: nowrap; margin-left: 4px; }
+
+  .p1 .phase-badge { background: #E6F1FB; color: #0C447C; }
+  .p2 .phase-badge { background: #EAF3DE; color: #27500A; }
+  .p3 .phase-badge { background: #EEEDFE; color: #3C3489; }
+  .p4 .phase-badge { background: #FAEEDA; color: #633806; }
+  .p5 .phase-badge { background: #E1F5EE; color: #085041; }
+  .p6 .phase-badge { background: #FAECE7; color: #712B13; }
+  .p7 .phase-badge { background: #FBEAF0; color: #72243E; }
+  .p8 .phase-badge { background: #FCEBEB; color: #791F1F; }
+
+  .tag-be { background: #E6F1FB; color: #0C447C; }
+  .tag-fe { background: #EEEDFE; color: #3C3489; }
+  .tag-ai { background: #E1F5EE; color: #085041; }
+  .tag-infra { background: #FAEEDA; color: #633806; }
+  .tag-db { background: #FAECE7; color: #712B13; }
+  .tag-qa { background: #FCEBEB; color: #791F1F; }
+  .tag-doc { background: #F1EFE8; color: #444441; }
+
+  @media (prefers-color-scheme: dark) {
+    .p1 .phase-badge { background: #0C447C; color: #B5D4F4; }
+    .p2 .phase-badge { background: #27500A; color: #C0DD97; }
+    .p3 .phase-badge { background: #3C3489; color: #CECBF6; }
+    .p4 .phase-badge { background: #633806; color: #FAC775; }
+    .p5 .phase-badge { background: #085041; color: #9FE1CB; }
+    .p6 .phase-badge { background: #712B13; color: #F5C4B3; }
+    .p7 .phase-badge { background: #72243E; color: #F4C0D1; }
+    .p8 .phase-badge { background: #791F1F; color: #F7C1C1; }
+    .tag-be { background: #0C447C; color: #B5D4F4; }
+    .tag-fe { background: #3C3489; color: #CECBF6; }
+    .tag-ai { background: #085041; color: #9FE1CB; }
+    .tag-infra { background: #633806; color: #FAC775; }
+    .tag-db { background: #712B13; color: #F5C4B3; }
+    .tag-qa { background: #791F1F; color: #F7C1C1; }
+    .tag-doc { background: #444441; color: #D3D1C7; }
+  }
+
+  .stats-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 16px; min-width: 100px; }
+  .stat-n { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .stat-l { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 4px 0; }
+</style>
+
+<div class="wbs-root">
+  <h2 class="sr-only">Work Breakdown Structure — nền tảng AI phân tích mã nguồn và tạo tài liệu kỹ thuật</h2>
+  <p class="wbs-title">WBS — AI Software Documentation Platform</p>
+  <p class="wbs-sub">Click vào từng giai đoạn để mở rộng / thu gọn danh sách task</p>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-n">8</div><div class="stat-l">Giai đoạn</div></div>
+    <div class="stat"><div class="stat-n">97</div><div class="stat-l">Task chi tiết</div></div>
+    <div class="stat"><div class="stat-n">~28</div><div class="stat-l">Tuần ước tính</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Nhóm kỹ năng</div></div>
+  </div>
+
+  <div id="wbs-container"></div>
+</div>
+
+<script>
+const phases = [
+  {
+    id: "P1", cls: "p1", label: "Phase 1", title: "Khởi động & Kiến trúc hệ thống", weeks: "Tuần 1–2",
+    groups: [
+      { label: "Phân tích yêu cầu", tasks: [
+        { id:"1.1.1", name:"Thu thập yêu cầu từ stakeholder (sinh viên, lập trình viên, doanh nghiệp)", tag:"doc" },
+        { id:"1.1.2", name:"Phân tích use case chi tiết: upload, analyze, generate, export", tag:"doc" },
+        { id:"1.1.3", name:"Xác định danh sách tài liệu đầu ra: README, SRS, API doc, báo cáo thực tập", tag:"doc" },
+        { id:"1.1.4", name:"Định nghĩa các loại input được hỗ trợ: .zip, .sql, .env, .json, source code", tag:"doc" },
+      ]},
+      { label: "Thiết kế kiến trúc", tasks: [
+        { id:"1.2.1", name:"Thiết kế sơ đồ kiến trúc tổng thể (multi-agent + RAG + vector DB + Ollama)", tag:"be" },
+        { id:"1.2.2", name:"Chọn stack công nghệ: Next.js, Node.js/Python, Qdrant/ChromaDB, Ollama", tag:"infra" },
+        { id:"1.2.3", name:"Thiết kế luồng dữ liệu từ upload → chunk → embed → retrieve → generate → export", tag:"be" },
+        { id:"1.2.4", name:"Thiết kế database schema: users, projects, documents, agents, embeddings", tag:"db" },
+        { id:"1.2.5", name:"Định nghĩa API contract giữa frontend và backend (OpenAPI/Swagger)", tag:"be" },
+        { id:"1.2.6", name:"Thiết kế agent orchestration flow và message protocol giữa các agent", tag:"ai" },
+      ]},
+      { label: "Thiết lập môi trường", tasks: [
+        { id:"1.3.1", name:"Setup monorepo hoặc microservices repository structure", tag:"infra" },
+        { id:"1.3.2", name:"Cấu hình Docker Compose cho toàn bộ stack (backend, vector DB, Ollama)", tag:"infra" },
+        { id:"1.3.3", name:"Setup CI/CD pipeline (GitHub Actions hoặc tương đương)", tag:"infra" },
+        { id:"1.3.4", name:"Cài đặt Ollama và kéo các model: Qwen, DeepSeek, Llama, Mistral", tag:"ai" },
+        { id:"1.3.5", name:"Cấu hình vector database: Qdrant hoặc ChromaDB với collection schema", tag:"db" },
+      ]}
+    ]
+  },
+  {
+    id: "P2", cls: "p2", label: "Phase 2", title: "Backend Core — Upload & Xử lý File", weeks: "Tuần 3–5",
+    groups: [
+      { label: "File ingestion", tasks: [
+        { id:"2.1.1", name:"API endpoint nhận file upload (single file, ZIP, folder)", tag:"be" },
+        { id:"2.1.2", name:"Giải nén ZIP và tái tạo cấu trúc thư mục trong sandbox", tag:"be" },
+        { id:"2.1.3", name:"Quét và liệt kê cây thư mục, loại bỏ node_modules / .git / build artifacts", tag:"be" },
+        { id:"2.1.4", name:"Phát hiện ngôn ngữ lập trình theo extension và shebang line", tag:"be" },
+        { id:"2.1.5", name:"Nhận diện framework: Next.js, React, Spring Boot, Flask, Express, Electron", tag:"be" },
+        { id:"2.1.6", name:"Đọc và parse file cấu hình: package.json, pom.xml, requirements.txt, .env", tag:"be" },
+      ]},
+      { label: "Code analysis", tasks: [
+        { id:"2.2.1", name:"Parser AST-based cho JavaScript/TypeScript (API routes, controllers)", tag:"be" },
+        { id:"2.2.2", name:"Parser cho Python (Flask routes, SQLAlchemy models, decorators)", tag:"be" },
+        { id:"2.2.3", name:"Parser cho Java (Spring annotations, @Controller, @Service, @Repository)", tag:"be" },
+        { id:"2.2.4", name:"Nhận diện middleware, authentication flow, JWT/session logic", tag:"be" },
+        { id:"2.2.5", name:"Phân tích database schema từ migration files, ORM models", tag:"db" },
+        { id:"2.2.6", name:"Xây dựng dependency graph giữa modules/files", tag:"be" },
+      ]},
+      { label: "Chunking & Embedding", tasks: [
+        { id:"2.3.1", name:"Chiến lược chunking: theo function, class, route, hoặc sliding window", tag:"ai" },
+        { id:"2.3.2", name:"Metadata tagging cho mỗi chunk: file path, type, language, framework", tag:"ai" },
+        { id:"2.3.3", name:"Tích hợp embedding model chạy local (nomic-embed-text hoặc tương đương)", tag:"ai" },
+        { id:"2.3.4", name:"Batch embedding pipeline với progress tracking", tag:"ai" },
+        { id:"2.3.5", name:"Lưu vector và metadata vào Qdrant/ChromaDB với collection riêng per project", tag:"db" },
+        { id:"2.3.6", name:"Xây dựng re-indexing mechanism khi project được cập nhật", tag:"db" },
+      ]}
+    ]
+  },
+  {
+    id: "P3", cls: "p3", label: "Phase 3", title: "RAG Engine & AI Agent System", weeks: "Tuần 6–9",
+    groups: [
+      { label: "RAG pipeline", tasks: [
+        { id:"3.1.1", name:"Xây dựng retrieval function: semantic search + keyword filter kết hợp", tag:"ai" },
+        { id:"3.1.2", name:"Hybrid search: vector similarity + BM25 full-text trên metadata", tag:"ai" },
+        { id:"3.1.3", name:"Reranking kết quả retrieval theo context relevance", tag:"ai" },
+        { id:"3.1.4", name:"Context window management: ghép chunk, tránh vượt quá token limit", tag:"ai" },
+        { id:"3.1.5", name:"Prompt template engine cho từng loại tài liệu (README, SRS, API doc...)", tag:"ai" },
+      ]},
+      { label: "Multi-agent framework", tasks: [
+        { id:"3.2.1", name:"Agent: Code Analyzer — phân tích cấu trúc và logic source code", tag:"ai" },
+        { id:"3.2.2", name:"Agent: DB Reader — đọc schema, quan hệ bảng, stored procedure", tag:"ai" },
+        { id:"3.2.3", name:"Agent: API Mapper — liệt kê endpoints, method, param, response", tag:"ai" },
+        { id:"3.2.4", name:"Agent: Content Writer — sinh nội dung tài liệu từ context", tag:"ai" },
+        { id:"3.2.5", name:"Agent: Format Checker — kiểm tra format, heading, section consistency", tag:"ai" },
+        { id:"3.2.6", name:"Agent: Synthesizer — tổng hợp output từ các agent khác thành tài liệu hoàn chỉnh", tag:"ai" },
+        { id:"3.2.7", name:"Orchestrator: điều phối thứ tự chạy agent, xử lý retry và fallback", tag:"ai" },
+        { id:"3.2.8", name:"Thiết kế message queue giữa các agent (async hoặc streaming)", tag:"be" },
+      ]},
+      { label: "Model integration", tasks: [
+        { id:"3.3.1", name:"Tích hợp Ollama API với streaming response support", tag:"ai" },
+        { id:"3.3.2", name:"Model selection logic: chọn model phù hợp theo task (code vs. text)", tag:"ai" },
+        { id:"3.3.3", name:"Fallback mechanism khi model overloaded hoặc timeout", tag:"ai" },
+        { id:"3.3.4", name:"Benchmark các model: Qwen vs DeepSeek vs Mistral trên documentation task", tag:"ai" },
+      ]}
+    ]
+  },
+  {
+    id: "P4", cls: "p4", label: "Phase 4", title: "Document Generation & Export", weeks: "Tuần 10–12",
+    groups: [
+      { label: "Loại tài liệu", tasks: [
+        { id:"4.1.1", name:"Generator: README.md (overview, setup, usage, env vars)", tag:"ai" },
+        { id:"4.1.2", name:"Generator: API Documentation (endpoints, params, request/response, auth)", tag:"ai" },
+        { id:"4.1.3", name:"Generator: Software Requirement Specification (SRS) theo chuẩn IEEE 830", tag:"ai" },
+        { id:"4.1.4", name:"Generator: Báo cáo thực tập (giới thiệu công ty, chức năng, kiến trúc, kết quả)", tag:"ai" },
+        { id:"4.1.5", name:"Generator: Database documentation (ERD text, mô tả bảng, quan hệ)", tag:"ai" },
+        { id:"4.1.6", name:"Generator: Use case diagram text + sequence flow description", tag:"ai" },
+        { id:"4.1.7", name:"Generator: Hướng dẫn cài đặt và triển khai (local + Docker + cloud)", tag:"ai" },
+        { id:"4.1.8", name:"Generator: Mô tả chức năng hệ thống (functional spec)", tag:"ai" },
+      ]},
+      { label: "Export engine", tasks: [
+        { id:"4.2.1", name:"Export DOCX: heading styles, ToC, page numbering, cover page", tag:"be" },
+        { id:"4.2.2", name:"Export PDF: từ DOCX hoặc Markdown → PDF với font embed", tag:"be" },
+        { id:"4.2.3", name:"Template system: university templates (HUST, UIT, HCMUS...)", tag:"be" },
+        { id:"4.2.4", name:"Markdown preview và export", tag:"be" },
+        { id:"4.2.5", name:"Batch export: nhiều tài liệu trong một lần generate", tag:"be" },
+      ]}
+    ]
+  },
+  {
+    id: "P5", cls: "p5", label: "Phase 5", title: "Frontend — Giao diện người dùng", weeks: "Tuần 11–15",
+    groups: [
+      { label: "Upload & Project management", tasks: [
+        { id:"5.1.1", name:"Trang upload: drag-and-drop file, ZIP, folder với progress bar", tag:"fe" },
+        { id:"5.1.2", name:"Project dashboard: danh sách dự án, trạng thái phân tích, lịch sử", tag:"fe" },
+        { id:"5.1.3", name:"File tree viewer: hiển thị cây thư mục của project đã upload", tag:"fe" },
+        { id:"5.1.4", name:"Framework detection badge và technology stack summary", tag:"fe" },
+      ]},
+      { label: "Document editor", tasks: [
+        { id:"5.2.1", name:"Rich text editor tích hợp (TipTap hoặc Quill) để chỉnh sửa tài liệu inline", tag:"fe" },
+        { id:"5.2.2", name:"Markdown editor với live preview 2 cột", tag:"fe" },
+        { id:"5.2.3", name:"Section-by-section regeneration: chọn đoạn cụ thể để AI viết lại", tag:"fe" },
+        { id:"5.2.4", name:"Comment/annotation system trên tài liệu", tag:"fe" },
+        { id:"5.2.5", name:"Version history: xem và rollback các phiên bản tài liệu", tag:"fe" },
+      ]},
+      { label: "Generation UI", tasks: [
+        { id:"5.3.1", name:"Màn hình chọn loại tài liệu cần tạo (checklist)", tag:"fe" },
+        { id:"5.3.2", name:"Streaming output display: hiển thị nội dung khi AI đang sinh", tag:"fe" },
+        { id:"5.3.3", name:"Agent activity monitor: hiển thị agent nào đang chạy, trạng thái", tag:"fe" },
+        { id:"5.3.4", name:"Tùy chọn cấu hình: model, language, template, style", tag:"fe" },
+        { id:"5.3.5", name:"Export panel: chọn format (DOCX/PDF/MD) và tải về", tag:"fe" },
+      ]},
+      { label: "UI/UX", tasks: [
+        { id:"5.4.1", name:"Responsive design cho desktop và tablet", tag:"fe" },
+        { id:"5.4.2", name:"Dark mode / Light mode toggle", tag:"fe" },
+        { id:"5.4.3", name:"Skeleton loading, error boundary, toast notification system", tag:"fe" },
+        { id:"5.4.4", name:"Onboarding flow và tooltip hướng dẫn lần đầu sử dụng", tag:"fe" },
+      ]}
+    ]
+  },
+  {
+    id: "P6", cls: "p6", label: "Phase 6", title: "AI Memory & Self-Learning", weeks: "Tuần 16–19",
+    groups: [
+      { label: "Memory system", tasks: [
+        { id:"6.1.1", name:"Lưu trữ project structure memory: tech stack, patterns, naming conventions", tag:"ai" },
+        { id:"6.1.2", name:"User preference memory: writing style, section order, tone, language", tag:"ai" },
+        { id:"6.1.3", name:"University template memory: format, font, margin, structure theo trường", tag:"ai" },
+        { id:"6.1.4", name:"Feedback memory: ghi nhớ chỉnh sửa của người dùng để cải thiện output", tag:"ai" },
+        { id:"6.1.5", name:"Memory retrieval: inject memory vào prompt khi generate tài liệu mới", tag:"ai" },
+      ]},
+      { label: "Fine-tuning & learning", tasks: [
+        { id:"6.2.1", name:"Thu thập và chuẩn hóa synthetic dataset từ output đã được approve", tag:"ai" },
+        { id:"6.2.2", name:"Pipeline fine-tuning LoRA với Unsloth hoặc HuggingFace PEFT", tag:"ai" },
+        { id:"6.2.3", name:"Evaluation metrics: ROUGE, BLEU, human rating cho tài liệu sinh ra", tag:"ai" },
+        { id:"6.2.4", name:"A/B testing: base model vs. fine-tuned model trên cùng project", tag:"ai" },
+        { id:"6.2.5", name:"Model registry: lưu trữ và versioning các model checkpoint", tag:"infra" },
+      ]}
+    ]
+  },
+  {
+    id: "P7", cls: "p7", label: "Phase 7", title: "Bảo mật, Auth & Multi-tenancy", weeks: "Tuần 18–21",
+    groups: [
+      { label: "Authentication", tasks: [
+        { id:"7.1.1", name:"User registration, login, logout với JWT + refresh token", tag:"be" },
+        { id:"7.1.2", name:"OAuth2 integration (Google, GitHub)", tag:"be" },
+        { id:"7.1.3", name:"Role-based access control: admin, user, team member", tag:"be" },
+        { id:"7.1.4", name:"Session management và token revocation", tag:"be" },
+      ]},
+      { label: "Data isolation & privacy", tasks: [
+        { id:"7.2.1", name:"Project isolation: mỗi user chỉ thấy project của mình", tag:"be" },
+        { id:"7.2.2", name:"File sandboxing: upload file không thể truy cập chéo giữa users", tag:"infra" },
+        { id:"7.2.3", name:"Vector collection per user: không chia sẻ embedding space", tag:"db" },
+        { id:"7.2.4", name:"Tự động xóa file tạm sau khi xử lý xong", tag:"infra" },
+        { id:"7.2.5", name:"Audit log: ghi lại hành động upload, generate, export", tag:"be" },
+      ]},
+      { label: "Team & sharing", tasks: [
+        { id:"7.3.1", name:"Team workspace: chia sẻ project trong nhóm", tag:"be" },
+        { id:"7.3.2", name:"Permission sharing: view-only hoặc edit cho từng document", tag:"be" },
+        { id:"7.3.3", name:"Export link: tạo link download có thời hạn cho tài liệu", tag:"be" },
+      ]}
+    ]
+  },
+  {
+    id: "P8", cls: "p8", label: "Phase 8", title: "Testing, Deploy & Tối ưu hóa", weeks: "Tuần 22–28",
+    groups: [
+      { label: "Testing", tasks: [
+        { id:"8.1.1", name:"Unit test cho từng parser (JS, Python, Java)", tag:"qa" },
+        { id:"8.1.2", name:"Unit test cho chunking logic và embedding pipeline", tag:"qa" },
+        { id:"8.1.3", name:"Integration test cho toàn bộ RAG pipeline (upload → generate)", tag:"qa" },
+        { id:"8.1.4", name:"Agent behavior test: đầu vào giả, kiểm tra output có đủ section không", tag:"qa" },
+        { id:"8.1.5", name:"E2E test với Playwright: upload → generate → export DOCX/PDF", tag:"qa" },
+        { id:"8.1.6", name:"Load test: 10 user đồng thời upload và generate", tag:"qa" },
+        { id:"8.1.7", name:"Document quality evaluation với real-world projects", tag:"qa" },
+      ]},
+      { label: "Performance optimization", tasks: [
+        { id:"8.2.1", name:"Embedding caching: tránh re-embed file không thay đổi", tag:"be" },
+        { id:"8.2.2", name:"Ollama model warm-up và connection pooling", tag:"infra" },
+        { id:"8.2.3", name:"Async job queue cho generation task (Bull/Celery)", tag:"be" },
+        { id:"8.2.4", name:"Frontend bundle optimization, code splitting, lazy loading", tag:"fe" },
+        { id:"8.2.5", name:"Database indexing tối ưu cho vector search queries", tag:"db" },
+      ]},
+      { label: "Deployment", tasks: [
+        { id:"8.3.1", name:"Dockerfile cho từng service (frontend, backend, vector DB)", tag:"infra" },
+        { id:"8.3.2", name:"Docker Compose cho self-hosted deployment", tag:"infra" },
+        { id:"8.3.3", name:"Kubernetes Helm chart cho enterprise deployment", tag:"infra" },
+        { id:"8.3.4", name:"Hướng dẫn cài đặt offline hoàn chỉnh (không cần internet)", tag:"doc" },
+        { id:"8.3.5", name:"Monitoring: Prometheus + Grafana cho system metrics", tag:"infra" },
+        { id:"8.3.6", name:"Logging tập trung: structured logs với ELK stack hoặc Loki", tag:"infra" },
+        { id:"8.3.7", name:"Health check endpoint và alerting khi service down", tag:"infra" },
+      ]}
+    ]
+  }
+];
+
+const tagClasses = { be:"tag-be", fe:"tag-fe", ai:"tag-ai", infra:"tag-infra", db:"tag-db", qa:"tag-qa", doc:"tag-doc" };
+const tagLabels = { be:"Backend", fe:"Frontend", ai:"AI/ML", infra:"Infra", db:"Database", qa:"QA", doc:"Docs" };
+
+const container = document.getElementById('wbs-container');
+
+phases.forEach((phase, pi) => {
+  const el = document.createElement('div');
+  el.className = `phase ${phase.cls}`;
+
+  const header = document.createElement('div');
+  header.className = 'phase-header';
+  const totalTasks = phase.groups.reduce((a, g) => a + g.tasks.length, 0);
+  header.innerHTML = `
+    <span class="phase-badge">${phase.label}</span>
+    <span class="phase-title">${phase.title}</span>
+    <span class="phase-meta">${totalTasks} task · ${phase.weeks}</span>
+    <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+  `;
+
+  const body = document.createElement('div');
+  body.className = 'phase-body';
+  body.style.display = pi === 0 ? 'block' : 'none';
+
+  phase.groups.forEach((group, gi) => {
+    const grpEl = document.createElement('div');
+    grpEl.className = 'group';
+    if (gi > 0) {
+      const div = document.createElement('hr');
+      div.className = 'divider';
+      body.appendChild(div);
+    }
+    grpEl.innerHTML = `<div class="group-label">${group.label}</div>`;
+    const list = document.createElement('div');
+    list.className = 'task-list';
+    group.tasks.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'task';
+      row.innerHTML = `<span class="task-id">${t.id}</span><span class="task-name">${t.name}</span><span class="task-tag ${tagClasses[t.tag]}">${tagLabels[t.tag]}</span>`;
+      list.appendChild(row);
+    });
+    grpEl.appendChild(list);
+    body.appendChild(grpEl);
+  });
+
+  header.addEventListener('click', () => {
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    header.querySelector('.chevron').classList.toggle('open', !isOpen);
+  });
+
+  if (pi === 0) header.querySelector('.chevron').classList.add('open');
+
+  el.appendChild(header);
+  el.appendChild(body);
+  container.appendChild(el);
+});
+</script>
